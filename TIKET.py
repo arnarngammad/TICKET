@@ -4,15 +4,29 @@ from flask import Flask
 from threading import Thread
 import os  # ✅ FIX 1
 
-app = Flask('')
+# ✅ GLOBAL TOKEN
+TOKEN = os.getenv("TOKEN")
+
+if not TOKEN:
+    raise Exception("❌ TOKEN missing!")
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# ==========================================
+# FLASK
+# ==========================================
+
+app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Bot is alive!"
+    return "I'm alive"
 
 def run():
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=10000)
 
 def keep_alive():
     t = Thread(target=run)
@@ -21,6 +35,8 @@ def keep_alive():
 # ==========================================
 # CONFIG
 # ==========================================
+TOKEN = os.getenv("TOKEN")
+
 OWNER_ID = 923096413934616596  # 🔥 replace with your real Discord ID
 
 SUPPORT_CATEGORY_ID = 1466995318246609069
@@ -198,14 +214,6 @@ async def ticket_panel(interaction: discord.Interaction):
 # ==========================================
 # READY EVENT
 # ==========================================
-@bot.event
-async def on_ready():
-    print(f"✅ Logged in as {bot.user}")
-    try:
-        synced = await bot.tree.sync()
-        print(f"🔄 Synced {len(synced)} commands")
-    except Exception as e:
-        print(e)
 
 @bot.event
 async def on_ready():
@@ -215,12 +223,9 @@ async def on_ready():
         print(f"🔄 Synced {len(synced)} commands")
     except Exception as e:
         print(e)
-
 
 # ==========================================
 # RUN BOT
 # ==========================================
-if __name__ == "__main__":
-    keep_alive()
-    token = os.getenv("DISCORD_TOKEN")
-    bot.run(token)
+keep_alive()
+bot.run(TOKEN)
